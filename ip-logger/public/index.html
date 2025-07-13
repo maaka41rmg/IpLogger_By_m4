@@ -1,0 +1,37 @@
+    <html>
+      <head>
+        <title>Panel de IPs</title>
+        <style>
+          body { font-family: Arial; padding: 2rem; background: #f0f0f0; }
+          table { border-collapse: collapse; width: 100%; background: white; }
+          th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+          th { background-color: #333; color: white; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+        </style>
+      </head>
+      <body>
+        <h2>Registros de IP</h2>
+        <table>
+          <tr>
+            <th>IP</th>
+            <th>Ciudad</th>
+            <th>País</th>
+            <th>Fecha</th>
+            <th>User-Agent</th>
+          </tr>
+          ${data
+            .reverse()
+            .map(
+              (log) => `
+            <tr>
+              <td>${log.ip}</td>
+              <td>${log.city}</td>
+              <td>${log.country}</td>
+              <td>${log.fecha}</td>
+              <td>${log.userAgent}</td>
+            </tr>`
+            )
+            .join("")}
+        </table>
+      </body>
+    </html>
