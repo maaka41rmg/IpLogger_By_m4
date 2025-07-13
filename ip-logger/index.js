@@ -3,11 +3,17 @@ const fs = require("fs");
 const axios = require("axios");
 const path = require("path");
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+// Asegura que logs.txt exista
+if (!fs.existsSync("logs.txt")) {
+  fs.writeFileSync("logs.txt", "");
+}
+
+// Servir archivos estáticos desde "public"
 app.use(express.static("public"));
 
-// Ruta principal para registrar IPs
+// Ruta para registrar IP
 app.get("/track", async (req, res) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
   const userAgent = req.headers["user-agent"];
@@ -40,11 +46,49 @@ app.get("/panel", (req, res) => {
   const data = fs.existsSync("logs.txt")
     ? fs.readFileSync("logs.txt", "utf8").trim().split("\n").map(JSON.parse)
     : [];
-  res.send(`
 
+  const rows = data
+    .map(
+      (entry) => `
+        <tr>
+          <td>${entry.ip}</td>
+          <td>${entry.city}</td>
+          <td>${entry.country}</td>
+          <td>${entry.fecha}</td>
+          <td>${entry.userAgent}</td>
+        </tr>`
+    )
+    .join("");
+
+  res.send(`
+    <html>
+      <head>
+        <title>Panel de IPs</title>
+        <style>
+          body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background: #333; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>IPs Registradas</h1>
+        <table>
+          <tr>
+            <th>IP</th>
+            <th>Ciudad</th>
+            <th>País</th>
+            <th>Fecha</th>
+            <th>Agente</th>
+          </tr>
+          ${rows}
+        </table>
+      </body>
+    </html>
   `);
 });
 
+// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🔍 IP Logger activo en http://localhost:${PORT}/track`);
   console.log(`📊 Panel disponible en http://localhost:${PORT}/panel`);
